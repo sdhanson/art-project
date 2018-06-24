@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Art Search</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="stylesheets/style.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt" crossorigin="anonymous">
+
+
+  <style>
+    body {
+      color: white;
+      font-family:Monospace;
+      font-size:13px;
+      text-align:center;
+
+      background-color: #050505;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    #info {
+      position: absolute;
+      top: 0; width: 100%;
+      padding: 5px;
+    }
+
+    a {
+      color: #0080ff;
+    }
+
+  </style>
+</head>
+<body>
+
+<script src="javascripts/three.min.js"> </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/randomcolor/0.5.2/randomColor.min.js"></script>
+
+<div id="container"></div>
+<div id="info">
+  Hanson Art Gallery
+    <form class="form-inline justify-content-center search-bar" role="form">
+      <div class="form-group">
+        <label class="sr-only" >Query</label>
+        <input id="query" type="search" class="form-control" placeholder="Search artwork" />
+      </div>
+      <div class="form-group">
+        <a data-action="run"
+           data-code="#example3"
+           data-target="#example3-container">
+          <i class="fas fa-chevron-right"></i>
+        </a>
+      </div>
+    </form>
+
+</div>
+
+
+<!--<table id="example3-container" class="example3-container target table-striped">-->
+<!--</table>-->
+
+
+
+<script src="javascripts/scale.fix.js"></script>
+<script src="javascripts/jquery-1.10.2.min.js"></script>
+<script src="javascripts/underscore-min.js"></script>
+<script src="javascripts/jquery.scrollintoview.min.js"></script>
+
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+
+<!--<script id="example3" type="example">-->
+    <!--function search(query) {-->
+        <!--return $.getJSON("https://www.rijksmuseum.nl/api/en/collection?q=Q&key=fpGQTuED&format=json".replace("Q", query));-->
+    <!--}-->
+
+<!--function thumbnail(object) {-->
+    <!--var image = object.webImage.url.replace("s0", "s128");-->
+    <!--return $("<div>")-->
+        <!--.addClass("thumb")-->
+        <!--.css("background-image", "url(" + object.webImage.url.replace("s0", "s128") +")");-->
+<!--}-->
+<!--</script>-->
+<!--<script>-->
+<!--search($("#query").val())-->
+<!--.done(function(results) {-->
+<!--$("#example3-container").empty();-->
+<!--var $table = $("#example3-container");-->
+<!--$table.html("");-->
+<!--// create a row for each art object found-->
+<!--$.each(results.artObjects, function(index, object) {-->
+<!--console.log(object);-->
+
+<!--var $row = $('<tr class="child"><td>'-->
+<!--+ object.objectNumber-->
+<!--+'</td><td class="thumbnail">'-->
+<!--+'</td><td>'-->
+<!--+ object.title-->
+<!--+'</td></tr>').appendTo($table);-->
+
+<!--$row.find(".thumbnail").append(thumbnail(object));-->
+<!--$row.on("click", function() {-->
+<!--document.location = object.links.web;-->
+<!--});-->
+<!--})-->
+<!--});-->
+<!--</script>-->
+
+<!--<script>-->
+<!--$("code[data-code]").each(function(i,el){-->
+    <!--$(el).text($($(el).data("code")).text());-->
+<!--})-->
+<!--$("[data-action=run]").click(function(evt){-->
+    <!--evt.preventDefault();-->
+    <!--var $button = $(this);-->
+    <!--eval ($($button.data("code")).text());-->
+
+    <!--$($button.data("target")).scrollintoview(false);-->
+<!--});-->
+<!--</script>-->
+
+<script>
+
+    var scene, camera, renderer, light, image;
+
+    function init() {
+
+        scene = new THREE.Scene();
+        var color = randomColor(); // a hex code for an attractive color
+        scene.background = new THREE.Color( color );
+
+        var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
+        var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
+        camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+        scene.add(camera);
+        camera.position.set(0,150,400);
+        camera.lookAt(scene.position);
+
+        renderer = new THREE.WebGLRenderer();
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        document.body.appendChild( renderer.domElement );
+
+        // Create a light, set its position, and add it to the scene.
+        light = new THREE.PointLight(0xffffff);
+        light.position.set(-100,200,100);
+        scene.add(light);
+
+        var geometry = new THREE.BoxGeometry( 300, 300, 0 );
+        // var material = new THREE.MeshBasicMaterial( { color: 0xffffff } );
+        var texture = THREE.ImageUtils.loadTexture(image, {}, function() {
+            renderer.render(scene);
+        });
+        var material = new THREE.MeshBasicMaterial({map: texture});
+        var canvas = new THREE.Mesh( geometry, material );
+        canvas.position.z = -200;
+        canvas.position.y = -120;
+        canvas.rotation.x = -Math.PI/10;
+        scene.add( canvas );
+
+        window.addEventListener( 'resize', onWindowResize, false );
+    }
+
+    function search(query) {
+        image = $.getJSON("https://www.rijksmuseum.nl/api/en/collection?q=Q&key=fpGQTuED&format=json".replace("Q", query)).webImage.url.replace("s0", "s128");
+    }
+
+    function onWindowResize() {
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        renderer.render(scene, camera);
+    }
+
+
+    function animate() {
+
+        // Read more about requestAnimationFrame at http://www.paulirish.com/2011/requestanimationframe-for-smart-animating/
+        requestAnimationFrame(animate);
+
+        // Render the scene.
+        renderer.render(scene, camera);
+        controls.update();
+
+    }
+
+    init();
+    animate();
+
+</script>
+
+
+
+
+
+</body>
+
